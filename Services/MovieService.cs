@@ -12,17 +12,24 @@ public interface IMovieService
     Task<Movie> GetMovieAsync(string id);
     Task<List<Movie>> GetMoviesAsync();
     Task SendMailAsync();
+    Task<User> AddUserAsync(User newUser);
+    Task<List<User>> AddUsersAsync(List<User> newUsers);
+    Task<User> GetUserAsync(string id);
+    Task<List<User>> GetUsersAsync();
+    Task<List<string>> GetEmailAsync();
 }
 
 public class MovieService : IMovieService
 {
     private readonly ICrewRepository _crewRepository;
     private readonly IMovieRepository _movieRepository;
+    private readonly IUserRepository _userRepository;
 
-    public MovieService(ICrewRepository crewRepository, IMovieRepository movieRepository)
+    public MovieService(ICrewRepository crewRepository, IMovieRepository movieRepository, IUserRepository userRepository)
     {
         _crewRepository = crewRepository;
         _movieRepository = movieRepository;
+        _userRepository = userRepository;
     }
 
     public async Task SetupData()
@@ -243,16 +250,36 @@ public class MovieService : IMovieService
         {
             if (movie.ReleaseDate == today)
             {
-                //getAllUsers
-                //if film in user => add email to emails
-                //if crew of film in user and not in emails yet => add email to emails
+                var users = await GetUsersAsync();
+                foreach (var user in users)
+                {
+                    foreach (var userMovie in user.Movies!)
+                    {
+                        //if film in user => add email to emails
+                        if (userMovie == movie)
+                        {
+                            //if crew of film in user and not in emails yet => add email to emails
+                            if (!emails.Contains(user.Email!))
+                            {
+                                emails.Add(user.Email!);
+                            }
+                        }
+                    }
+                }
 
             }
         }
-
-        //mailserivce.sendmailAsync(Emails)
-
     }
+
+    public async Task<User> AddUserAsync(User newUser) => await _userRepository.AddUserAsync(newUser);
+
+    public async Task<List<User>> AddUsersAsync(List<User> newUsers) => await _userRepository.AddUsersAsync(newUsers);
+
+    public async Task<User> GetUserAsync(string id) => await _userRepository.GetUserAsync(id);
+
+    public async Task<List<User>> GetUsersAsync() => await _userRepository.GetUsersAsync();
+
+    public async Task<List<string>> GetEmailAsync() => await _userRepository.GetEmailsAsync();
 
     //for movie in movies
     // if (movie.releaseDate == currentDate)

@@ -14,7 +14,7 @@ public class MongoContext : IMongoContext
 {
     private readonly MongoClient _client;
     private readonly IMongoDatabase _database;
-    private readonly DatabaseSettings _settings;
+    private readonly DatabaseConfig _settings;
 
     public IMongoClient Client
     {
@@ -25,7 +25,7 @@ public class MongoContext : IMongoContext
     }
     public IMongoDatabase Database => _database;
 
-    public MongoContext(IOptions<DatabaseSettings> dbOptions)
+    public MongoContext(IOptions<DatabaseConfig> dbOptions)
     {
         _settings = dbOptions.Value;
         _client = new MongoClient(_settings.ConnectionString);

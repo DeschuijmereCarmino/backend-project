@@ -1,8 +1,16 @@
 namespace backendProject.API.Repositories;
 
-public class UserRepository
+public interface IUserRepository
 {
+    Task<User> AddUserAsync(User user);
+    Task<List<User>> AddUsersAsync(List<User> newUsers);
+    Task<User> GetUserAsync(string id);
+    Task<List<User>> GetUsersAsync();
+    Task<List<string>> GetEmailsAsync();
+}
 
+public class UserRepository : IUserRepository
+{
     private readonly IMongoContext _context;
 
     public UserRepository(IMongoContext context)
@@ -10,17 +18,33 @@ public class UserRepository
         _context = context;
     }
 
-    //return list of emails of all users
-    public async Task<List<String>> GetEmailsByIds(List<string> ids)
+    public async Task<User> AddUserAsync(User newUser)
+    {
+        await _context.UsersCollection.InsertOneAsync(newUser);
+        return newUser;
+    }
+
+    public async Task<List<User>> AddUsersAsync(List<User> newUsers)
+    {
+        await _context.UsersCollection.InsertManyAsync(newUsers);
+        return newUsers;
+    }
+
+    public async Task<User> GetUserAsync(string id) => await _context.UsersCollection.Find<User>(u => u.Id == id).FirstOrDefaultAsync();
+
+    public async Task<List<User>> GetUsersAsync() => await _context.UsersCollection.Find(_ => true).ToListAsync();
+
+    public async Task<List<String>> GetEmailsAsync()
     {
         var emails = new List<String>();
+        var users = await GetUsersAsync();
 
-        foreach (var id in ids)
+        foreach (var user in users)
         {
-            var user = await _context.UsersCollection.Find<User>(u => u.Id == id).FirstOrDefaultAsync();
             emails.Add(user.Email!);
         }
 
         return emails;
     }
+
 }
