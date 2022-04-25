@@ -3,7 +3,9 @@ namespace backendProject.API.Services;
 public interface IMovieService
 {
     Task SetupData();
+    Task<Crew> AddCrewMemberAsync(Crew crew);
     Task<List<Crew>> GetActorCrewAsync();
+    Task<Crew> GetCrewMemberAsync(string id);
     Task<List<Crew>> GetCrewAsync();
     Task<List<Crew>> GetDirectorCrewAsync();
     Task<string> GetIdByCrewMemberNameAsync(string name);
@@ -11,11 +13,21 @@ public interface IMovieService
     Task<List<Movie>> AddMoviesAsync(List<Movie> movie);
     Task<Movie> GetMovieAsync(string id);
     Task<List<Movie>> GetMoviesAsync();
+    Task<List<Movie>> GetMoviesByIdsAsync(List<string> ids);
     Task SendMailAsync();
     Task<User> AddUserAsync(User newUser);
+    Task<User> AddUserCrewAsync(string id, Crew crew);
+    Task<User> AddUserMovieAsync(string id, UserMovie movie);
     Task<List<User>> AddUsersAsync(List<User> newUsers);
     Task<User> GetUserAsync(string id);
+    Task<List<string>> GetUserMovieIdsAsync(string id);
     Task<List<User>> GetUsersAsync();
+    Task<User> RemoveUserCrewAsync(string id, Crew crew);
+    Task<User> RemoveUserMovieAsync(string id, Movie movie);
+    Task<User> UpdateUserCrewAsync(string id, Crew crew);
+    Task<User> UpdateUserLoginAsync(string id, UserLogin userLogin);
+    // Task<User> UpdateUserPasswordAsync(string id, string password);
+    Task<User> UpdateUserMoviesAsync(string id, Movie movie);
     Task<List<string>> GetEmailAsync();
 }
 
@@ -222,9 +234,11 @@ public class MovieService : IMovieService
         }
     }
 
-    public async Task<Crew> GetCrewMemberAsync(string id) => await _crewRepository.GetCrewMemberAsync(id);
+    public async Task<Crew> AddCrewMemberAsync(Crew crew) => await _crewRepository.AddCrewMemberAsync(crew);
 
     public async Task<List<Crew>> GetActorCrewAsync() => await _crewRepository.GetActorCrewAsync();
+
+    public async Task<Crew> GetCrewMemberAsync(string id) => await _crewRepository.GetCrewMemberAsync(id);
 
     public async Task<List<Crew>> GetCrewAsync() => await _crewRepository.GetCrewAsync();
 
@@ -233,11 +247,14 @@ public class MovieService : IMovieService
     public async Task<string> GetIdByCrewMemberNameAsync(string name) => await _crewRepository.GetIdByCrewMemberNameAsync(name);
 
     public async Task<Movie> AddMovieAsync(Movie movie) => await _movieRepository.AddMovieAsync(movie);
+
     public async Task<List<Movie>> AddMoviesAsync(List<Movie> movies) => await _movieRepository.AddMoviesAsync(movies);
 
     public async Task<Movie> GetMovieAsync(string id) => await _movieRepository.GetMovieAsync(id);
 
     public async Task<List<Movie>> GetMoviesAsync() => await _movieRepository.GetMoviesAsync();
+
+    public async Task<List<Movie>> GetMoviesByIdsAsync(List<string> ids) => await _movieRepository.GetMoviesByIdsAsync(ids);
 
     public async Task SendMailAsync()
     {
@@ -256,7 +273,7 @@ public class MovieService : IMovieService
                     foreach (var userMovie in user.Movies!)
                     {
                         //if film in user => add email to emails
-                        if (userMovie == movie)
+                        if (userMovie.Id == movie.Id)
                         {
                             //if crew of film in user and not in emails yet => add email to emails
                             if (!emails.Contains(user.Email!))
@@ -273,42 +290,29 @@ public class MovieService : IMovieService
 
     public async Task<User> AddUserAsync(User newUser) => await _userRepository.AddUserAsync(newUser);
 
+    public async Task<User> AddUserCrewAsync(string userId, Crew crew) => await _userRepository.AddUserCrewAsync(userId, crew);
+
+    public async Task<User> AddUserMovieAsync(string userId, UserMovie movie) => await _userRepository.AddUserMovieAsync(userId, movie);
+
     public async Task<List<User>> AddUsersAsync(List<User> newUsers) => await _userRepository.AddUsersAsync(newUsers);
 
     public async Task<User> GetUserAsync(string id) => await _userRepository.GetUserAsync(id);
 
+    public async Task<List<string>> GetUserMovieIdsAsync(string id) => await _userRepository.GetUserMovieIdsAsync(id);
+
     public async Task<List<User>> GetUsersAsync() => await _userRepository.GetUsersAsync();
 
+    public async Task<User> RemoveUserCrewAsync(string id, Crew crew) => await _userRepository.RemoveUserCrewAsync(id, crew);
+
+    public async Task<User> RemoveUserMovieAsync(string id, Movie movie) => await _userRepository.RemoveUserMovieAsync(id, movie);
+
+    public async Task<User> UpdateUserCrewAsync(string id, Crew crew) => await _userRepository.UpdateUserCrewAsync(id, crew);
+
+    public async Task<User> UpdateUserLoginAsync(string id, UserLogin userLogin) => await _userRepository.UpdateUserLoginAsync(id, userLogin);
+
+    public async Task<User> UpdateUserMoviesAsync(string id, Movie movie) => await _userRepository.UpdateUserMoviesAsync(id, movie);
+
+    // public async Task<User> UpdateUserPasswordAsync(string id, string password) => await _userRepository.UpdateUserPasswordAsync(id, password);
+
     public async Task<List<string>> GetEmailAsync() => await _userRepository.GetEmailsAsync();
-
-    //for movie in movies
-    // if (movie.releaseDate == currentDate)
-    // {
-
-    //   var emails = []
-    //   foreach(guid in movie.users)
-    //   {  
-    //     emails.add(getUsersEmailsById)
-    //   }
-
-    //   foreach(guid in movie.directors)
-    //   {
-    //      var ids = []
-    //      foreach id in ids
-    //      {
-    //         emails.add(getUsersEmailsFromDirectorsId)
-    //      }
-    //   }
-
-    //   foreach(guid in movie.directors)
-    //   {
-    //      var ids = []
-    //      foreach id in ids
-    //      {
-    //        emails.add(getUsersEmailsFromActorsId)  
-    //      }
-    //   }
-    //   foreach email in email => send email notifying of release
-    // } 
-
 }

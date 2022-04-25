@@ -3,10 +3,12 @@ namespace backendProject.API.Services;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
+    private readonly IMovieService _movieService;
 
-    public Worker(ILogger<Worker> logger)
+    public Worker(ILogger<Worker> logger, IMovieService movieService)
     {
         _logger = logger;
+        _movieService = movieService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,6 +34,7 @@ public class Worker : BackgroundService
 
         var delay = occurenceTime.GetValueOrDefault() - currentUtcTime;
         _logger.LogInformation("The run is delayed for {delay}. Current time: {time}", delay, DateTimeOffset.Now);
+        await _movieService.SendMailAsync();
 
         await Task.Delay(delay);
     }

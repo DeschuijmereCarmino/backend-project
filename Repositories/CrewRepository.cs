@@ -8,7 +8,6 @@ public interface ICrewRepository
     Task<List<Crew>> GetCrewAsync();
     Task<List<Crew>> GetDirectorCrewAsync();
     Task<Crew> GetCrewMemberAsync(string id);
-    
     Task<string> GetIdByCrewMemberNameAsync(string name);
 
 }
@@ -24,18 +23,49 @@ public class CrewRepository : ICrewRepository
 
     public async Task<Crew> AddCrewMemberAsync(Crew newCrew)
     {
-        await _context.CrewCollection.InsertOneAsync(newCrew);
-        return newCrew;
+        try
+        {
+            // var result = await _context.CrewCollection.Find<Crew>(c => c.Name == newCrew.Name).FirstOrDefaultAsync();
+
+            // if (result != null)
+            // {
+            //     return null!;
+            // }
+
+            await _context.CrewCollection.InsertOneAsync(newCrew);
+            return newCrew;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+ 
     }
 
     public async Task<List<Crew>> AddCrewAsync(List<Crew> newCrew)
     {
-        await _context.CrewCollection.InsertManyAsync(newCrew);
-        return newCrew;
+        try
+        {
+            // var result = await _context.CrewCollection.Find<Crew>(c => c.Name == newCrew.Name).FirstOrDefaultAsync();
+
+            // if (result != null)
+            // {
+            //     return null!;
+            // }    
+
+            await _context.CrewCollection.InsertManyAsync(newCrew);
+            return newCrew;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
     }
 
     public async Task<Crew> GetCrewMemberAsync(string id) => await _context.CrewCollection.Find<Crew>(a => a.Id == id).FirstOrDefaultAsync();
-    
+
     public async Task<List<Crew>> GetActorCrewAsync()
     {
         List<Crew> actors = new List<Crew>();
@@ -52,7 +82,7 @@ public class CrewRepository : ICrewRepository
 
         return actors;
     }
-    
+
     public async Task<List<Crew>> GetCrewAsync() => await _context.CrewCollection.Find(_ => true).ToListAsync();
 
     public async Task<List<Crew>> GetDirectorCrewAsync()
@@ -74,10 +104,18 @@ public class CrewRepository : ICrewRepository
 
     public async Task<string> GetIdByCrewMemberNameAsync(string name)
     {
-        var crew = await _context.CrewCollection.Find<Crew>(a => a.Name == name).FirstOrDefaultAsync();
-        return crew.Id!;
+        try
+        {
+            var crew = await _context.CrewCollection.Find<Crew>(a => a.Name == name).FirstOrDefaultAsync();
+            return crew.Id!;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return null!;
+        }
     }
-    
+
     // public async Task<Crew> UpdateCrewMemberAsync(string id, Crew crew)
     // {
     //     try

@@ -5,6 +5,7 @@ global using System.Security.Claims;
 global using Microsoft.IdentityModel.Tokens;
 
 global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Extensions.Options;
 
 //NUGET
@@ -22,7 +23,9 @@ global using SendGrid.Helpers.Mail;
 //API
 global using backendProject.API.Configuration;
 global using backendProject.API.Context;
+global using backendProject.API.GraphQl.Crews;
 global using backendProject.API.GraphQl.Movies;
+global using backendProject.API.GraphQl.Users;
 global using backendProject.API.GraphQl.Queries;
 global using backendProject.API.Models;
 global using backendProject.API.Repositories;

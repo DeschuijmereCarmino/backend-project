@@ -1,15 +1,33 @@
-public record UserInfo(string username, string name, string city);
+public record UserInfo(string id, string name);
 public record AuthenticationRequestBody(string username, string password);
 
 public interface IAuthenticationService
 {
-    UserInfo ValidateUser(string username, string password);
+    Task<UserInfo> ValidateUser(string username, string password);
 }
 
 public class AuthenticationService : IAuthenticationService
 {
-    public UserInfo ValidateUser(string username, string password)
+    private readonly IUserRepository _userRepository;
+
+    public AuthenticationService(IUserRepository userRepository)
     {
-        return new UserInfo("dieterp", "De Preester Dieter", "Gent");
+        _userRepository = userRepository;
+    }
+
+    public async Task<UserInfo> ValidateUser(string username, string password)
+    {
+
+        var user = await _userRepository.LoginUserAsync(username, password);
+        
+        if (user == null)
+        {
+            return null!;
+        }
+        else
+        {
+            return new UserInfo(user.Id!, user.Username!);
+        }
+
     }
 }
