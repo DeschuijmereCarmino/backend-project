@@ -5,9 +5,9 @@ public class UserValidator : AbstractValidator<User>
     List<string> conditions = new List<string>() { "Actor", "Director" };
     public UserValidator()
     {
-        RuleFor(u => u.Username).NotEmpty().WithMessage("Geef een username op");
-        RuleFor(u => u.Password).NotEmpty().WithMessage("Geef een wachtwoord op");
-        RuleFor(u => u.Email).NotEmpty().WithMessage("Geef een email op").EmailAddress().WithMessage("Geef een geldig email op");
+        RuleFor(u => u.Username).NotNull().WithMessage("Geef een username op").NotEmpty().WithMessage("Geef een username op");
+        RuleFor(u => u.Password).NotNull().WithMessage("Geef een wachtwoord op").NotEmpty().WithMessage("Geef een wachtwoord op");
+        RuleFor(u => u.Email).NotNull().WithMessage("Geef een email op").NotEmpty().WithMessage("Geef een email op").EmailAddress().WithMessage("Geef een geldig email op");
 
         When(u => u.Movies != null, () =>
         {

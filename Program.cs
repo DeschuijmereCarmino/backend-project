@@ -116,6 +116,17 @@ app.MapGet("/actors", async (IMovieService movieService) =>
     return Results.Ok(actors);
 });
 
+//Get CrewMember
+app.MapGet("/crew/{crewId}", async (IMovieService movieService, string crewId) =>
+{
+    var result = await movieService.GetCrewMemberAsync(crewId);
+
+    if (result == null)
+        return Results.NotFound();
+
+    return Results.Ok(result);
+});
+
 //Get Crew
 app.MapGet("/crew", async (IMovieService movieService) =>
 {
@@ -179,6 +190,11 @@ app.MapPost("/movie", async (IMovieService movieService, IValidator<Movie> valid
 app.MapGet("/movie/{id}", async (IMovieService movieService, string id) =>
 {
     var result = await movieService.GetMovieAsync(id);
+
+
+    if (result == null)
+        return Results.NotFound();
+
     return Results.Ok(result);
 });
 
@@ -216,12 +232,28 @@ app.MapPost("/user", async (IMovieService movieService, IValidator<User> validat
 });
 
 //Add User movie
-app.MapPost("/user/{userId}", async (IMovieService movieService, IValidator<UserMovie> validator, string userId, UserMovie movie) =>
+app.MapPost("/user/{userId}/movie", async (IMovieService movieService, IValidator<UserMovie> validator, string userId, UserMovie movie) =>
 {
     var validationResult = validator.Validate(movie);
     if (validationResult.IsValid)
     {
         var result = await movieService.AddUserMovieAsync(userId, movie);
+        return Results.Ok(result);
+    }
+    else
+    {
+        var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
+        return Results.BadRequest(errors);
+    }
+});
+
+//Add User crew
+app.MapPost("/user/{userId}/crew", async (IMovieService movieService, IValidator<Crew> validator, string userId, Crew crew) =>
+{
+    var validationResult = validator.Validate(crew);
+    if (validationResult.IsValid)
+    {
+        var result = await movieService.AddUserCrewAsync(userId, crew);
         return Results.Ok(result);
     }
     else
@@ -249,8 +281,15 @@ app.MapPost("/user/{userId}", async (IMovieService movieService, IValidator<User
 // });
 
 //Update User login
-app.MapPost("/user/{id}/login", async (IMovieService movieService, string id, UserLogin userLogin) =>
+app.MapPost("/user/{id}/login", async (IMovieService movieService, IValidator<UserLogin> validator, string id, UserLogin userLogin) =>
 {
+    var validationResult = validator.Validate(userLogin);
+    if (!validationResult.IsValid)
+    {
+        var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
+        return Results.BadRequest(errors);
+    }
+    
     var user = movieService.GetUserAsync(id);
 
     if (user == null)
