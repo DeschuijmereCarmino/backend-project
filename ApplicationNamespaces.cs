@@ -28,6 +28,7 @@ global using backendProject.API.GraphQl.Movies;
 global using backendProject.API.GraphQl.Users;
 global using backendProject.API.GraphQl.Queries;
 global using backendProject.API.Models;
+global using backendProject.API.GraphQl.Mutations;
 global using backendProject.API.Repositories;
 global using backendProject.API.Services;
 global using backendProject.API.Validators;

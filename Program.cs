@@ -18,6 +18,7 @@ builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
 builder.Services.AddTransient<IMovieService, MovieService>();
 builder.Services.AddTransient<IMailService, MailService>();
 
+//commentaar zetten voor testen
 //builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CrewValidator>());
@@ -28,7 +29,8 @@ builder.Services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyCont
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Queries>()
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true);
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
+    .AddMutationType<Mutation>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -40,17 +42,19 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["ApiKeyConfig:Issuer"],
-            ValidAudience = builder.Configuration["ApiKeyConfig:Audience"],
+            ValidIssuer = builder.Configuration["AuthenticationSettings:Issuer"],
+            ValidAudience = builder.Configuration["AuthenticationSettings:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(builder.Configuration["AuthenticationSettings:APIKey"]))
         };
     }
 );
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthorization();
 
 app.MapSwagger();
 app.UseSwaggerUI();
@@ -66,7 +70,7 @@ app.MapGet("/setup", (IMovieService movieService) =>
 });
 
 //Get Crew Id from name
-app.MapPost("/actorName", async (IMovieService movieService, IValidator<Crew> validator, Crew crew) =>
+app.MapPost("/crewName", async (IMovieService movieService, IValidator<Crew> validator, Crew crew) =>
 {
     var validationResult = validator.Validate(crew);
     if (validationResult.IsValid)
@@ -86,7 +90,7 @@ app.MapPost("/actorName", async (IMovieService movieService, IValidator<Crew> va
 });
 
 //Add Crew
-app.MapGet("/crew", async (IMovieService movieService, IValidator<Crew> validator, Crew crew) =>
+app.MapPost("/crew", async (IMovieService movieService, IValidator<Crew> validator, Crew crew) =>
 {
     var validationResult = validator.Validate(crew);
     if (validationResult.IsValid)
@@ -153,6 +157,24 @@ app.MapPost("/movie", async (IMovieService movieService, IValidator<Movie> valid
     }
 });
 
+//Add Movies =>DTO nodig voor json naar list conversie
+// app.MapPost("/movies", async (IMovieService movieService, IValidator<Movie> validator, List<Movie> movies) =>
+// {
+//     foreach (var movie in movies)
+//     {
+//         var validationResult = validator.Validate(movie);
+//         if (!validationResult.IsValid)
+//         {
+//             var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
+//             return Results.BadRequest(errors);
+//         }
+//     }
+
+//     var result = await movieService.AddMoviesAsync(movies);
+//     // return Results.Ok("movies created");
+//     return Results.Created("/movies", result);
+// });
+
 //Get Movie
 app.MapGet("/movie/{id}", async (IMovieService movieService, string id) =>
 {
@@ -166,11 +188,6 @@ app.MapGet("/movies", async (IMovieService movieService) =>
     var movies = await movieService.GetMoviesAsync();
     return Results.Ok(movies);
 });
-
-// app.MapGet("/sendmail", async (IMovieService movieService) =>
-// {
-//     await movieService.SendMailAsync();
-// });
 
 //SendEmail 
 app.MapGet("/sendmail", async (IMailService mailService, IMovieService movieService) =>
@@ -199,7 +216,7 @@ app.MapPost("/user", async (IMovieService movieService, IValidator<User> validat
 });
 
 //Add User movie
-app.MapPost("/user/{id}", async (IMovieService movieService, IValidator<UserMovie> validator, string userId, UserMovie movie) =>
+app.MapPost("/user/{userId}", async (IMovieService movieService, IValidator<UserMovie> validator, string userId, UserMovie movie) =>
 {
     var validationResult = validator.Validate(movie);
     if (validationResult.IsValid)
@@ -207,25 +224,29 @@ app.MapPost("/user/{id}", async (IMovieService movieService, IValidator<UserMovi
         var result = await movieService.AddUserMovieAsync(userId, movie);
         return Results.Ok(result);
     }
-    return Results.Ok("");
-});
-
-//Add Users
-app.MapPost("/users", [Authorize] async (IMovieService movieService, IValidator<User> validator, List<User> users) =>
-{
-    foreach (var user in users)
+    else
     {
-        var validationResult = validator.Validate(user);
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
-            return Results.BadRequest(errors);
-        }
+        var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
+        return Results.BadRequest(errors);
     }
-
-    var result = await movieService.AddUsersAsync(users);
-    return Results.Ok("users created");
 });
+
+// //Add Users
+// app.MapPost("/users",async (IMovieService movieService, IValidator<User> validator, List<User> users) =>
+// {
+//     foreach (var user in users)
+//     {
+//         var validationResult = validator.Validate(user);
+//         if (!validationResult.IsValid)
+//         {
+//             var errors = validationResult.Errors.Select(x => new { errors = x.ErrorMessage });
+//             return Results.BadRequest(errors);
+//         }
+//     }
+
+//     await movieService.AddUsersAsync(users);
+//     return Results.Ok("users created");
+// });
 
 //Update User login
 app.MapPost("/user/{id}/login", async (IMovieService movieService, string id, UserLogin userLogin) =>
@@ -262,16 +283,16 @@ app.MapGet("/user/{id}/movies", async (IMovieService movieService, string userId
 });
 
 //Get Users
-app.MapGet("/users", async (IMovieService movieService) =>
+app.MapGet("/users", [Authorize] async (IMovieService movieService, ClaimsPrincipal user) =>
 {
     var users = await movieService.GetUsersAsync();
     return Results.Ok(users);
 });
 
 //Delete User Crew
-app.MapDelete("/user/{id}/crew/{crewId}", async (IMovieService movieService, string id, [FromBody] string crewId) =>
+app.MapDelete("/user/{userId}/crew/{crewId}", async (IMovieService movieService, string userId, string crewId) =>
 {
-    var user = await movieService.GetUserAsync(id);
+    var user = await movieService.GetUserAsync(userId);
     var crew = await movieService.GetCrewMemberAsync(crewId);
 
     if (user == null)
@@ -284,14 +305,14 @@ app.MapDelete("/user/{id}/crew/{crewId}", async (IMovieService movieService, str
         return Results.NotFound();
     }
 
-    var result = await movieService.RemoveUserCrewAsync(id, crew);
+    var result = await movieService.RemoveUserCrewAsync(userId, crew);
     return Results.Ok(result);
 });
 
 //Delete User Movie
-app.MapDelete("/user/{id}/movie/{movieId}", async (IMovieService movieService, string id, [FromBody] string movieId) =>
+app.MapDelete("/user/{userId}/movie/{movieId}", async (IMovieService movieService, string userId, string movieId) =>
 {
-    var user = await movieService.GetUserAsync(id);
+    var user = await movieService.GetUserAsync(userId);
     var movie = await movieService.GetMovieAsync(movieId);
 
     if (user == null)
@@ -304,7 +325,7 @@ app.MapDelete("/user/{id}/movie/{movieId}", async (IMovieService movieService, s
         return Results.NotFound();
     }
 
-    var result = await movieService.RemoveUserMovieAsync(id, movie);
+    var result = await movieService.RemoveUserMovieAsync(userId, movieId);
     return Results.Ok(result);
 });
 

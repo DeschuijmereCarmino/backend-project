@@ -1,12 +1,20 @@
 GET http://localhost:3000/setup HTTP/1.1
 ###
 
-POST http://localhost:3000/actorName HTTP/1.1
-
+POST http://localhost:3000/crewName HTTP/1.1
 Content-Type: application/json
 
 {
     "name":"Harrison Ford",
+    "type": "Actor"
+}
+###
+
+POST http://localhost:3000/crew HTTP/1.1
+Content-Type: application/json
+
+{
+    "name":"John Rhys-Davies",
     "type": "Actor"
 }
 ###
@@ -23,14 +31,16 @@ GET http://localhost:3000/directors HTTP/1.1
 GET http://localhost:3000/emails HTTP/1.1
 ###
 
-POST  http://localhost:3000/movie HTTP/1.1
+POST  http://localhost:3000/movies HTTP/1.1
 Content-Type: application/json
 
 {
-    "Title":"Raiders of the Lost Ark",
-    "Description":"When Dr. Indiana Jones – the tweed-suited professor who just happens to be a celebrated archaeologist – is hired by the government to locate the legendary Ark of the Covenant, he finds himself up against the entire Nazi regime.",
-    "ReleaseDate":"12/10/1981",
-    "Crew":[
+  "movies":[
+    {
+      "Title":"The Temple of Doom",
+      "Description":"After arriving in India, Indiana Jones is asked by a desperate village to find a mystical stone. He agrees – and stumbles upon a secret cult plotting a terrible plan in the catacombs of an ancient palace.",
+      "ReleaseDate":"23/05/1984",
+      "Crew":[
         {
             "Id":"625ecf977726d02af8756041",
             "Name":"Steven Spielberg",
@@ -41,6 +51,25 @@ Content-Type: application/json
             "Name":"Harrison Ford",
             "Type": "Actor"
         }
+      ]
+    },
+    {
+      "Title":"American Graffiti",
+      "Description":"A couple of high school graduates spend one final night cruising the strip with their buddies before they go off to college.",
+      "ReleaseDate":"11/08/1973",
+      "Crew":[
+        {
+            "Id":"625ecf977726d02af875603e",
+            "Name":"George Lucas",
+            "Type": "Director"
+        },
+        {
+            "Id":"625ecf977726d02af8756037",
+            "Name":"Harrison Ford",
+            "Type": "Actor"
+        }
+      ]
+    }
     ]
 }
 ###
@@ -66,35 +95,12 @@ Content-Type: application/json
 }
 ###
 
-POST http://localhost:3000/user HTTP/1.1
+POST http://localhost:3000/user/62630296b03d2df707d1a2f9 HTTP/1.1
 Content-Type: application/json
 
 {
-  "username": "Carmino",
-  "email": "Carmino.deschuijmere@student.howest.be",
-  "password": "Howestisthebest",
-  "movies": [
-    {
-      "id": "625ecf987726d02af8756043",
-      "title": "Dune"
-    },
-    {
-      "id": "625ecf987726d02af8756044",
-      "title": "Star Wars"
-    }
-  ],
-  "crew": [
-    {
-      "id": "625ecf977726d02af875603d",
-      "name": "Denis Villeneuve",
-      "type": "Director"
-    },
-    {
-      "id": "625ecf977726d02af8756037",
-      "name": "Harrison Ford",
-      "type": "Actor"
-    }
-  ]
+    "id": "",
+    "title": ""
 }
 ###
 
@@ -118,39 +124,17 @@ GET http://localhost:3000/user/62630296b03d2df707d1a2f9 HTTP/1.1
 ###
 
 GET http://localhost:3000/users HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MjYzMDI5NmIwM2QyZGY3MDdkMWEyZjkiLCJnaXZlbl9uYW1lIjoiQ2FybWlubyIsIm5iZiI6MTY1MDk3MzgwNCwiZXhwIjoxNjUwOTc3NDA0LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDozMDAwIiwiYXVkIjoibW92aWVfYXBpX3VzZXJzIn0.hlBtpdpt8edKzdVaeABiJT_sKJgcfsaaNblRdbL1OC4
 ###
 
-DELETE http://localhost:3000/user/id/crew HTTP/1.1
+DELETE http://localhost:3000/user/62630296b03d2df707d1a2f9/crew/625ecf977726d02af875603d HTTP/1.1
 Content-Type: application/json
 
-{ 
-    "id":"",
-    "name":"Denis Villeneuve",
-    "type": "Director"
-}
 ###
 
-DELETE  http://localhost:3000/user/id/movie HTTP/1.1
+DELETE  http://localhost:3000/user/62630296b03d2df707d1a2f9/movie/625ecf987726d02af8756043 HTTP/1.1
 Content-Type: application/json
 
-{
-    "id":"",
-    "title":"Dune",
-    "description":"Paul Atreides, a brilliant and gifted young man born into a great destiny beyond his understanding, must travel to the most dangerous planet in the universe to ensure the future of his family and his people. As malevolent forces explode into conflict over the planet’s exclusive supply of the most precious resource in existence-a commodity capable of unlocking humanity’s greatest potential-only those who can conquer their fear will survive.",
-    "releaseDate":"22/10/2021",
-    "crew":[
-            {
-                "id":"",
-                "name":"Denis Villeneuve",
-                "type": "Director"
-            },
-            {
-                "id":"",
-                "name":"Oscar Isaac",
-                "type": "Actor"
-            }
-    ]
-}
 ###
 
 POST http://localhost:3000/authenticate HTTP/1.1

@@ -16,11 +16,11 @@ public class Worker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             //Elke minuut
-            await WaitForNextSchedule("* * * * *");
+            //await WaitForNextSchedule("* * * * *");
             //Elke dag om 13u
-            // await WaitForNextSchedule(" 0 13 * **");
+            await WaitForNextSchedule(" 0 13 * * *");
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-
+    
             // _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             // await Task.Delay(1000, stoppingToken);
         }
@@ -35,6 +35,7 @@ public class Worker : BackgroundService
         var delay = occurenceTime.GetValueOrDefault() - currentUtcTime;
         _logger.LogInformation("The run is delayed for {delay}. Current time: {time}", delay, DateTimeOffset.Now);
         await _movieService.SendMailAsync();
+        _logger.LogInformation("Email sent");
 
         await Task.Delay(delay);
     }

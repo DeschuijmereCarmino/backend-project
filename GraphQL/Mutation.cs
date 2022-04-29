@@ -1,4 +1,4 @@
-namespace backendProject.GraphQl.Mutations;
+namespace backendProject.API.GraphQl.Mutations;
 
 public class Mutation
 {
@@ -11,7 +11,7 @@ public class Mutation
             ReleaseDate = input.releaseDate,
             Crew = input.crew
         };
-
+        
         var created = await movieService.AddMovieAsync(newMovie);
         return new AddMoviePayload(created);
     }

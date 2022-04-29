@@ -12,7 +12,7 @@ public interface IUserRepository
     Task<List<User>> GetUsersAsync();
     Task<User> LoginUserAsync(string username, string password);
     Task<User> RemoveUserCrewAsync(string id, Crew crew);
-    Task<User> RemoveUserMovieAsync(string id, Movie movie);
+    Task<User> RemoveUserMovieAsync(string id, string movieId);
     Task<User> UpdateUserCrewAsync(string id, Crew crew);
     // Task<User> UpdateUserEmailAsync(string id, string email);
     Task<User> UpdateUserLoginAsync(string id, UserLogin userLogin);
@@ -147,12 +147,14 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> RemoveUserMovieAsync(string id, Movie movie)
+    public async Task<User> RemoveUserMovieAsync(string id, string movieId)
     {
         try
         {
             var filter = Builders<User>.Filter.Eq("Id", id);
-            var update = Builders<User>.Update.Pull("Movies", movie);
+            var update = Builders<User>.Update.PullFilter(u => u.Movies,
+                m => m.Id == movieId);
+
             var result = await _context.UsersCollection.UpdateOneAsync(filter, update);
             return await GetUserAsync(id);
         }
@@ -242,4 +244,5 @@ public class UserRepository : IUserRepository
             throw;
         }
     }
+
 }
