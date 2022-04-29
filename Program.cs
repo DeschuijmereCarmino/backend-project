@@ -19,7 +19,7 @@ builder.Services.AddTransient<IMovieService, MovieService>();
 builder.Services.AddTransient<IMailService, MailService>();
 
 //commentaar zetten voor testen
-//builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CrewValidator>());
 builder.Services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<MovieValidator>());
@@ -398,8 +398,8 @@ app.MapPost("/authenticate", async (IAuthenticationService authenticationService
     return Results.Ok(tokenToReturn);
 });
 
-//app.Run("http://0.0.0.0:3000");
+app.Run("http://0.0.0.0:3000");
 
 //VOOR TESTEN
-app.Run();
+//app.Run();
 public partial class Program { }
