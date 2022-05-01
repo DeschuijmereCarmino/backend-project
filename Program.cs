@@ -29,6 +29,8 @@ builder.Services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyCont
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Queries>()
+    .AddFiltering()
+    .AddSorting()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .AddMutationType<Mutation>();
 
